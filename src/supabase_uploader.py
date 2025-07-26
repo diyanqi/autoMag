@@ -2,7 +2,7 @@
 
 from supabase import create_client, Client
 from src import config
-from src.ai_processor import generate_preview_content
+from src.ai_processor import generate_preview_content, generate_material_description
 import re
 from datetime import datetime
 
@@ -80,7 +80,33 @@ def extract_tags_from_material(material_data: dict) -> list:
 
 def generate_description(material_data: dict) -> str:
     """
-    基于AI生成的材料智能生成描述。
+    使用AI基于材料数据生成自然的描述。
+    
+    Args:
+        material_data: AI生成的完整材料数据
+        
+    Returns:
+        AI生成的描述文本
+    """
+    try:
+        # 调用AI生成描述
+        ai_description = generate_material_description(material_data)
+        
+        # 如果AI生成成功，返回AI描述
+        if ai_description and len(ai_description.strip()) > 20:
+            return ai_description.strip()
+        else:
+            print("⚠️ AI生成描述失败或内容过短，使用备用方案")
+            # 如果AI生成失败，使用备用的简单描述
+            return generate_fallback_description(material_data)
+            
+    except Exception as e:
+        print(f"⚠️ AI生成描述时出错: {e}，使用备用方案")
+        return generate_fallback_description(material_data)
+
+def generate_fallback_description(material_data: dict) -> str:
+    """
+    备用的简单描述生成方案。
     
     Args:
         material_data: AI生成的完整材料数据
@@ -142,7 +168,7 @@ def generate_description(material_data: dict) -> str:
         return description
         
     except Exception as e:
-        print(f"⚠️ 生成描述时出错: {e}")
+        print(f"⚠️ 生成备用描述时出错: {e}")
         return f"来自{material_data.get('source', '外媒')}的英语精读材料，适合英语学习者提升阅读理解能力。"
 
 def clean_original_content(content: str) -> str:
@@ -201,6 +227,17 @@ def upload_material(material_data: dict, original_link: str, original_content: s
         # 清理原始内容
         cleaned_original_content = clean_original_content(original_content) if original_content else ""
         
+        # 生成价格
+        price = 0.00
+        if 11 <= len(content.get('paragraphs', [])) <= 14:
+            price = 0.10
+        elif 15 <= len(content.get('paragraphs', [])) <= 18:
+            price = 0.20
+        elif 19 <= len(content.get('paragraphs', [])) <= 22:
+            price = 0.30
+        elif len(content.get('paragraphs', [])) > 22:
+            price = 0.40
+
         # 准备要插入的数据对象
         data_to_insert = {
             # 基础信息
@@ -216,7 +253,7 @@ def upload_material(material_data: dict, original_link: str, original_content: s
             'preview_content': preview_content,  # 预览内容
             
             # 定价和权限
-            'price': 0.00,  # 默认免费，可以后续调整
+            'price': price,  # 默认免费，可以后续调整
             'creator_email': creator_email,
             'owners': [creator_email],  # 初始拥有者是创建者
             

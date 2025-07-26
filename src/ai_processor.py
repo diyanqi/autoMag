@@ -3,7 +3,7 @@
 import json
 import openai
 from src import config
-from src.prompts import SYSTEM_PROMPT, create_user_prompt, MODERATION_SYSTEM_PROMPT, create_moderation_user_prompt
+from src.prompts import SYSTEM_PROMPT, create_user_prompt, MODERATION_SYSTEM_PROMPT, create_moderation_user_prompt, DESCRIPTION_SYSTEM_PROMPT, create_description_user_prompt
 import re
 
 # Import demjson for robust JSON parsing
@@ -60,7 +60,7 @@ def is_article_safe(title: str, content: str) -> bool:
                 print(f"❌ Safety check failed. Reason from AI: {response}")
                 return False
         else:
-            # 如果AI返回空内容，则默认为不安全，保证“安全失败”
+            # 如果AI返回空内容，则默认为不安全，保证"安全失败"
             print("❌ Safety check failed. Reason: AI returned an empty response.")
             return False
         # --- 修复结束 ---
@@ -72,6 +72,49 @@ def is_article_safe(title: str, content: str) -> bool:
         # 增加一个通用的异常捕获，以防其他意外错误
         print(f"An unexpected error occurred during safety check: {e}")
         return False # Fail safe
+
+def generate_material_description(material_data: dict) -> str:
+    """
+    使用AI为材料生成自然、吸引人的描述。
+
+    Args:
+        material_data: 完整的材料数据字典
+
+    Returns:
+        AI生成的材料描述
+    """
+    print("🎨 正在使用AI生成材料描述...")
+    
+    user_prompt = create_description_user_prompt(material_data)
+    
+    try:
+        completion = client.chat.completions.create(
+            model=config.MODEL_NAME,
+            messages=[
+                {"role": "system", "content": DESCRIPTION_SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.7,  # 稍高的温度以获得更有创意的描述
+            max_tokens=500,   # 限制描述长度
+            extra_body={"chat_template_kwargs": {"thinking":False}},
+        )
+
+        message = completion.choices[0].message
+        
+        if message and message.content:
+            description = message.content.strip()
+            print(f"✅ AI描述生成成功，长度: {len(description)} 字符")
+            return description
+        else:
+            print("❌ AI返回空描述")
+            return ""
+
+    except openai.APIError as e:
+        print(f"❌ AI API错误: {e}")
+        return ""
+    except Exception as e:
+        print(f"❌ 生成描述时发生未知错误: {e}")
+        return ""
 
 def generate_reading_material(title: str, content: str, url: str) -> dict:
     """
@@ -96,9 +139,9 @@ def generate_reading_material(title: str, content: str, url: str) -> dict:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.5,
+            temperature=0.8,
             response_format={"type": "json_object"}, 
-            extra_body={"chat_template_kwargs": {"thinking":False}},
+            extra_body={"chat_template_kwargs": {"thinking":True}},
             max_tokens=16384,
             stream=True
         )
