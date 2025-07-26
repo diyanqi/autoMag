@@ -196,6 +196,7 @@ def create_user_prompt(article_title: str, article_content: str, url: str) -> st
 JSON结构模板 (必须严格遵守此结构):
 ```json
 {json_structure_definition}
+再次提醒：你必须从头到尾分析文章的【每一个段落】。
 现在，请开始生成完整的JSON响应。
 """
     return prompt

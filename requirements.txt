@@ -4,3 +4,5 @@ supabase
 beautifulsoup4
 requests
 feedparser
+Flask
+json5

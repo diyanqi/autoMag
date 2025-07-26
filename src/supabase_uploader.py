@@ -210,6 +210,13 @@ def upload_material(material_data: dict, original_link: str, original_content: s
         # 从AI生成的数据中提取信息
         content = material_data.get("content", {})
         metadata = material_data.get("metadata", {})
+
+        paragraph_count = len(content.get('paragraphs', []))
+
+        if paragraph_count <= 5:
+            # 认为出错了，不会上传到数据库
+            print(f"⚠️ 文章段落数过少，仅有{str(paragraph_count)}段，不上传到数据库")
+            return None
         
         # 提取标题
         title = content.get("title", {}).get("chinese", 
@@ -229,14 +236,19 @@ def upload_material(material_data: dict, original_link: str, original_content: s
         
         # 生成价格
         price = 0.00
-        if 11 <= len(content.get('paragraphs', [])) <= 14:
+        featured = False
+        if 11 <= paragraph_count <= 14:
             price = 0.10
-        elif 15 <= len(content.get('paragraphs', [])) <= 18:
+        elif 15 <= paragraph_count <= 18:
             price = 0.20
-        elif 19 <= len(content.get('paragraphs', [])) <= 22:
+        elif 19 <= paragraph_count <= 22:
             price = 0.30
-        elif len(content.get('paragraphs', [])) > 22:
+        elif 23 <= paragraph_count <= 30:
             price = 0.40
+            featured = True
+        elif paragraph_count > 30:
+            price = 0.50
+            featured = True
 
         # 准备要插入的数据对象
         data_to_insert = {
@@ -263,7 +275,7 @@ def upload_material(material_data: dict, original_link: str, original_content: s
             
             # 发布状态
             'is_published': True,   # 默认发布
-            'is_featured': False,   # 默认不推荐，可以后续手动调整
+            'is_featured': featured,   # 默认不推荐，可以后续手动调整
         }
 
         print(f"📊 上传信息摘要:")

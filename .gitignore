@@ -119,3 +119,4 @@ dmypy.json
 *.log
 *.sqlite
 processed_urls.txt
+*_urls.txt

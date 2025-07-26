@@ -8,6 +8,7 @@
 - 调用AI模型，根据高度定制化的提示词生成包含词汇、语法、翻译和总结的JSON数据。
 - 鲁棒的JSON解析机制，确保AI输出的稳定性。
 - 将最终生成的数据无缝上传到指定的Supabase数据表。
+- 提供一个简单的Web面板，用于监控系统状态。
 
 ## 设置步骤
 
@@ -48,8 +49,12 @@ pip install -r requirements.txt
   - `OPENAI_API_BASE_URL`: API的端点URL。
   - `SUPABASE_URL`: 你的Supabase项目URL。
   - `SUPABASE_KEY`: 你的Supabase项目 **service_role key**。这非常重要，因为需要写权限。请妥善保管此密钥。
+  - `FLASK_SECRET_KEY`: 用于加密Web会话的随机安全字符串。
+  - `FLASK_ACCESS_KEY`: 访问Web面板的密钥。
 
 ## 如何使用
+
+### 运行主程序
 
 配置完成后，你可以通过命令行来运行整个流程。只需提供一个你想处理的新闻文章URL即可。
 
@@ -59,6 +64,17 @@ python main.py
 ```
 
 程序将会依次执行：抓取 -> AI处理 -> 上传，并在控制台输出每一步的状态。
+
+### 启动Web面板
+
+你可以运行 `dashboard.py` 来启动一个本地Web服务器，用于监控系统状态。
+
+```bash
+source ./.venv/bin/activate
+python dashboard.py
+```
+
+然后，在浏览器中打开 `http://127.0.0.1:5000` 并使用你在 `.env` 文件中设置的 `FLASK_ACCESS_KEY` 登录。
 
 ## 注意事项
 

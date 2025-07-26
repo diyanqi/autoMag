@@ -6,12 +6,12 @@ from src import config
 from src.prompts import SYSTEM_PROMPT, create_user_prompt, MODERATION_SYSTEM_PROMPT, create_moderation_user_prompt, DESCRIPTION_SYSTEM_PROMPT, create_description_user_prompt
 import re
 
-# Import demjson for robust JSON parsing
+# Import json5 for robust JSON parsing
 try:
-    import demjson
+    import json5
 except ImportError:
-    demjson = None
-    print("🚨 警告：demjson库未安装。请运行 'pip install demjson' 以获得更健壮的JSON解析能力。")
+    json5 = None
+    print("🚨 警告：json5库未安装。请运行 'pip install json5' 以获得更健壮的JSON解析能力。")
 
 # 初始化 OpenAI 客户端
 try:
@@ -139,7 +139,7 @@ def generate_reading_material(title: str, content: str, url: str) -> dict:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.8,
+            temperature=0.3,
             response_format={"type": "json_object"}, 
             extra_body={"chat_template_kwargs": {"thinking":True}},
             max_tokens=16384,
@@ -175,16 +175,16 @@ def generate_reading_material(title: str, content: str, url: str) -> dict:
         except json.JSONDecodeError as e:
             print(f"⚠️ 标准JSON解析失败: {e}。尝试使用更健壮的解析器...")
             
-        # 尝试使用demjson进行更健壮的解析
-        if parsed_json is None and demjson:
+        # 尝试使用json5进行更健壮的解析
+        if parsed_json is None and json5:
             try:
-                parsed_json = demjson.decode(raw_response)
-                print("✅ 使用demjson成功解析。")
+                parsed_json = json5.loads(raw_response)
+                print("✅ 使用json5成功解析。")
                 return parsed_json
-            except Exception as demjson_e:
-                print(f"❌ demjson解析失败: {demjson_e}")
-        elif parsed_json is None and not demjson:
-            print("🚨 警告：demjson库未安装，无法进行更健壮的JSON解析。")
+            except Exception as json5_e:
+                print(f"❌ json5解析失败: {json5_e}")
+        elif parsed_json is None and not json5:
+            print("🚨 警告：json5库未安装，无法进行更健壮的JSON解析。")
 
         # 最终尝试：手动提取JSON字符串并再次尝试标准解析
         if parsed_json is None:
