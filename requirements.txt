@@ -1,0 +1,6 @@
+python-dotenv
+openai
+supabase
+beautifulsoup4
+requests
+feedparser
