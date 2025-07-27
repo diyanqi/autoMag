@@ -141,8 +141,8 @@ def generate_reading_material(title: str, content: str, url: str) -> dict:
             ],
             temperature=0.3,
             response_format={"type": "json_object"}, 
-            extra_body={"chat_template_kwargs": {"thinking":True}},
-            max_tokens=16384,
+            extra_body={"chat_template_kwargs": {"thinking":False}},
+            max_tokens=35000,
             stream=True
         )
         
