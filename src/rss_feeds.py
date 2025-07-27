@@ -13,12 +13,13 @@ FEEDS = {
     # "Foreign Policy": "https://foreignpolicy.com/feed/", # Noisy
     "NPR": "https://feeds.npr.org/1001/rss.xml", # Good!
     # "The Atlantic": "https://www.theatlantic.com/feed/channel/news/",
-    "South China Morning Post": "https://www.scmp.com/rss/91/feed", # Good! But short.
+    # "South China Morning Post": "https://www.scmp.com/rss/91/feed", # Good! But short.
     # "China Daily": "http://www.chinadaily.com.cn/rss/world_rss.xml", # Law risk.
     # "Nikkei Asia": "https://asia.nikkei.com/rss/feed/nar",
     # "Al Jazeera": "https://www.aljazeera.com/xml/rss/all.xml",
     "TIME": "https://feeds.feedburner.com/time/world", # Good.
     # "Scientific American": "http://rss.sciam.com/sciam/global", # No!
     # "Harvard Business Review": "https://hbr.org/rss/regular",
-    # "Google Technology News": "https://rss.app/feeds/Kxa8xrxD4Sp28GNW.xml",
+    "CNN World": "https://rss.app/feeds/nihOB5Yeon0bloLP.xml",
+    "Google Technology News": "https://rss.app/feeds/Kxa8xrxD4Sp28GNW.xml",
 }
