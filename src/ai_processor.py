@@ -1,3 +1,5 @@
+# path: src/ai_processor.py
+
 import json
 import openai
 from src import config
@@ -116,23 +118,22 @@ def generate_material_description(material_data: dict) -> str:
 
 def generate_reading_material(title: str, content: str, url: str) -> dict:
     """
-    调用AI模型生成精读材料，并进行健壮的JSON解析。
+    调用AI模型生成精读材料，使用流式传输并在终端实时输出，并进行健壮的JSON解析。
 
     Args:
         title: 文章标题。
         content: 文章正文。
-        url: 文章的URL。
 
     Returns:
         一个解析好的Python字典。
     """
-    print("🔄 正在调用AI模型生成精读内容...")
+    print("🔄 正在调用AI模型生成精读内容（流式传输）...")
     
     user_prompt = create_user_prompt(title, content, url)
     
     try:
-        # 非流式请求
-        completion = client.chat.completions.create(
+        # 创建流式请求
+        stream = client.chat.completions.create(
             model=config.MODEL_NAME,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
@@ -141,13 +142,27 @@ def generate_reading_material(title: str, content: str, url: str) -> dict:
             temperature=0.3,
             response_format={"type": "json_object"}, 
             extra_body={"chat_template_kwargs": {"thinking":False}},
-            max_tokens=1000000, # 确保有足够的tokens
-            # stream=False # 默认就是False，无需显式设置
+            max_tokens=3533000,
+            stream=True
         )
         
-        print("✅ AI响应接收完成。")
+        print("📡 开始接收流式响应...")
+        print("-" * 50)
         
-        raw_response = completion.choices[0].message.content
+        raw_response = ""
+        
+        # 处理流式响应
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                chunk_content = chunk.choices[0].delta.content
+                raw_response += chunk_content
+                
+                # 实时输出到终端
+                print(chunk_content, end='', flush=True)
+        
+        print()
+        print("-" * 50)
+        print("✅ 流式传输完成")
         
         # --- 鲁棒性 JSON 解析处理 ---
         parsed_json = None
@@ -188,9 +203,9 @@ def generate_reading_material(title: str, content: str, url: str) -> dict:
                     raise ValueError("在AI响应中找不到有效的JSON对象结构。")
             except (json.JSONDecodeError, ValueError) as e:
                 print("❌ 最终解析失败。")
-                # print("--- 原始响应 ---")
-                # print(raw_response)
-                # print("-----------------")
+                print("--- 原始响应 ---")
+                print(raw_response)
+                print("-----------------")
                 raise ValueError(f"无法解析AI的响应: {e}")
 
     except openai.APIError as e:
